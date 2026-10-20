@@ -61,6 +61,14 @@ run `FinanceManagerApplication`. Open **http://localhost:8081/register** to crea
 account, then log in at **http://localhost:8081/login**. The port is set in
 `application.properties`.
 
+## Dashboard insights and statement tools
+
+The dashboard summarizes signed balances across accounts, current-month income and expenses, savings rate, and a per-day spend guide. It also shows category spend, a 14-day cash-flow chart, prior-month category comparisons, budget progress and threshold alerts, estimated 50/30/20 category allocation, account balances, savings goals, and bills due within 14 days. The 50/30/20 grouping is a heuristic based on category names; review it against your own needs.
+
+Use **Transfer between accounts** to move a positive amount between accounts in the same currency. Use **Upload CSV** to import up to 1,000 rows (2 MB maximum). CSV columns are `date,type,amount,category,description`; `account` is optional. Dates must use `YYYY-MM-DD`, type must be `income` or `expense`, and category/account names must match entries already in the app. An example is available at `/example-statement.csv`.
+
+Add a reminder under **Upcoming bills & renewals** for scheduled rent, subscriptions, EMIs, or other payments. Reminders are user-entered and appear in the next-14-days window.
+
 ## Project Structure
 
 ```
@@ -90,6 +98,9 @@ src/main/resources/
 | GET/POST | /addIncome | Log a new income entry          |
 | GET/POST | /addExpense| Log a new expense (checks budget cap) |
 | GET | /transactions | Search recent income and expense activity |
+| POST | /transfers | Move funds between your accounts |
+| GET/POST | /statements/import | Import a CSV statement |
+| POST | /bills | Add an upcoming bill reminder |
 | GET/POST | /budgets | View spending progress and save monthly category limits |
 | POST | /api/v1/upi/webhook | Parse and record an authenticated UPI payment notification |
 | GET | /settings/theme | Save display preferences in browser local storage |
@@ -107,3 +118,14 @@ continues to update existing installations through `ddl-auto=update`.
 - Budget-cap checking runs in `FinanceService.checkBudgetStatus()` and compares
   monthly spend per category — read from `TransactionSplitRepository`, so split
   expenses are counted correctly — against the `Budget` entity's `monthlyLimit`.
+
+## Run from IntelliJ IDEA
+
+1. Install JDK 17 or newer and MySQL 8. In MySQL, create the local database with `CREATE DATABASE finance_manager;` (or run `database/01_create_database.sql`).
+2. Open IntelliJ IDEA and choose **File → Open**, then select `Desktop/AJP_Project/project` (the directory containing `pom.xml`). Choose **Open as Project** and trust the project when prompted.
+3. In **File → Project Structure → Project**, set the Project SDK to JDK 17 or newer. Let IntelliJ import the Maven dependencies from `pom.xml` and finish indexing.
+4. Open **Run → Edit Configurations… → + → Spring Boot**. Set the main class to `com.financemanager.FinanceManagerApplication` and set the working directory to this project directory. Add environment variables `DB_USERNAME=root`, `DB_PASSWORD=` (set your local MySQL password after the equals sign; leave it empty if root has no password), and `OPENAI_API_KEY=` (paste your OpenAI API key after the equals sign to enable AI answers in the in-app guide). You can optionally set `OPENAI_MODEL` if your API project uses a different available model.
+5. Click **Apply**, **OK**, then the green **Run** button. Wait for the Spring Boot started message in the Run window.
+6. Visit `http://localhost:8081/` for the landing page. Create an account, then log in. The application dashboard is at `http://localhost:8081/dashboard`.
+
+The app uses the local MySQL database `finance_manager`; it does not use an embedded database. The default MySQL username is `root`, and the password is read from the IntelliJ `DB_PASSWORD` environment variable. The Clarity guide uses the OpenAI Responses API when `OPENAI_API_KEY` is configured; the key stays server-side and is never sent to the browser. You can also launch it from IntelliJ's Maven tool window with `spring-boot:run` after setting the same environment variables in the Maven run configuration.

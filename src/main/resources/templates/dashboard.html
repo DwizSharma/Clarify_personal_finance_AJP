@@ -1,107 +1,30 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard - Personal Finance Manager</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
-<body>
-<div class="app-shell">
-    <div th:replace="~{fragments/nav :: sidebar(active='dashboard')}"></div>
-
-    <main class="main">
-        <div class="page-header">
-            <h1 th:text="'Welcome, ' + ${user.username}">Welcome</h1>
-            <p class="subtitle">Here's where your money stands right now.</p>
-        </div>
-
-        <div class="card-row">
-            <div class="stat-card">
-                <div class="label">Net Balance</div>
-                <div class="value" th:text="${netBalance}">0</div>
-            </div>
-            <div class="stat-card income">
-                <div class="label">This Month's Income</div>
-                <div class="value" th:text="${monthlyIncome}">0</div>
-            </div>
-            <div class="stat-card expense">
-                <div class="label">This Month's Expenses</div>
-                <div class="value" th:text="${monthlyExpense}">0</div>
-            </div>
-        </div>
-        <section class="card health-card"><h2>Financial health</h2><strong class="health-score" th:text="${healthScore} + ' / 100'">0 / 100</strong><p>Based on savings rate, monthly spending and savings goal progress.</p></section>
-        <section class="card"><h2>Savings goals</h2><form method="post" th:action="@{/goals}" class="goal-form"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><label>Goal name<input name="goalName" required placeholder="Emergency fund"></label><label>Target amount<input name="targetAmount" type="number" min="0.01" step="0.01" required></label><label>Target date<input name="deadline" type="date"></label><button class="button" type="submit">Add goal</button></form><div th:each="g:${savingsGoals}" class="goal-row"><strong th:text="${g.goalName}"></strong><span th:text="${g.currentAmount} + ' / ' + ${g.targetAmount}"></span></div><p th:if="${#lists.isEmpty(savingsGoals)}" class="empty-state">No savings goals set.</p></section>
-        <section class="card dashboard-actions"><h2>Quick actions</h2><a class="button" th:href="@{/transactions}">Add transaction</a> <a class="button secondary" th:href="@{/budgets}">Manage budgets</a> <a class="button secondary" th:href="@{/reports/download(format='csv')}">Export CSV</a></section>
-
-        <h2>Budgets</h2>
-        <div class="card">
-            <div th:if="${#lists.isEmpty(budgets)}" class="empty-state">No budgets set yet.</div>
-            <div class="table-wrap" th:unless="${#lists.isEmpty(budgets)}">
-                <table>
-                    <thead>
-                        <tr><th>Category</th><th>Monthly Limit</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="b : ${budgets}">
-                            <td><span class="badge" th:text="${b.category.name}">Category</span></td>
-                            <td th:text="${b.monthlyLimit}">0</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <h2>Recent Expenses</h2>
-        <div class="card">
-            <div th:if="${#lists.isEmpty(expenseHistory)}" class="empty-state">No expenses logged yet.</div>
-            <div class="table-wrap" th:unless="${#lists.isEmpty(expenseHistory)}">
-                <table>
-                    <thead>
-                        <tr><th>Date</th><th>Category</th><th>Description</th><th style="text-align:right;">Amount</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="e : ${expenseHistory}">
-                            <td th:text="${e.date}">Date</td>
-                            <td>
-                                <span class="badge" th:text="${e.category.name}">Category</span>
-                                <span th:if="${e.isSplit()}" class="split-indicator"
-                                      th:text="'(split into ' + ${e.splits.size()} + ')'">(split)</span>
-                                <div th:if="${e.isSplit()}" class="split-breakdown">
-                                    <span th:each="s : ${e.splits}"
-                                          th:text="${s.category.name} + ': ' + ${#numbers.formatDecimal(s.amount, 1, 'COMMA', 2, 'POINT')}">Category: 0.00</span>
-                                </div>
-                            </td>
-                            <td th:text="${e.description}">Description</td>
-                            <td style="text-align:right;" class="amount-neg" th:text="${e.amount}">0</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <h2>Recent Income</h2>
-        <div class="card">
-            <div th:if="${#lists.isEmpty(incomeHistory)}" class="empty-state">No income logged yet.</div>
-            <div class="table-wrap" th:unless="${#lists.isEmpty(incomeHistory)}">
-                <table>
-                    <thead>
-                        <tr><th>Date</th><th>Category</th><th>Description</th><th style="text-align:right;">Amount</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="i : ${incomeHistory}">
-                            <td th:text="${i.date}">Date</td>
-                            <td><span class="badge" th:text="${i.category.name}">Category</span></td>
-                            <td th:text="${i.description}">Description</td>
-                            <td style="text-align:right;" class="amount-pos" th:text="${i.amount}">0</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-</div>
-</body>
-</html>
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Overview · Clarity</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" th:href="@{/css/style.css}"><script th:src="@{/js/theme.js}"></script></head>
+<body><div class="app-shell"><div th:replace="~{fragments/nav :: sidebar(active='dashboard')}"></div><main class="main dashboard-main">
+<header class="dashboard-heading"><div><p class="eyebrow">YOUR FINANCIAL SPACE · <span th:text="${currentMonthLabel}">MONTH</span></p><h1 th:text="'Good to see you, ' + ${user.username} + '.'">Good to see you.</h1><p class="subtitle">A thoughtful look at where things stand.</p></div><div class="live-clock"><span class="live-dot"></span><div><b id="live-clock">--:--:--</b><small>YOUR LOCAL TIME</small></div></div></header>
+<section class="card-row dashboard-stats"><article class="stat-card balance-stat"><div class="stat-label-row"><span class="label">Net worth · tracked accounts</span><span class="stat-symbol">₹</span></div><div class="value" th:text="'₹ ' + ${#numbers.formatDecimal(trackedLiquidity,1,'COMMA',2,'POINT')}">₹ 0.00</div><small>Cash, savings, wallets and signed card balances</small></article><article class="stat-card income"><div class="stat-label-row"><span class="label">Income · <span th:text="${currentMonthLabel}">Month</span></span><span class="stat-symbol">↗</span></div><div class="value" th:text="'₹ ' + ${#numbers.formatDecimal(monthlyIncome,1,'COMMA',2,'POINT')}">₹ 0.00</div><small>Money in this month</small></article><article class="stat-card expense"><div class="stat-label-row"><span class="label">Spent · <span th:text="${currentMonthLabel}">Month</span></span><span class="stat-symbol">↘</span></div><div class="value" th:text="'₹ ' + ${#numbers.formatDecimal(monthlyExpense,1,'COMMA',2,'POINT')}">₹ 0.00</div><small>Money out this month</small></article><article class="stat-card savings-stat"><div class="stat-label-row"><span class="label">Monthly difference</span><span class="stat-symbol">✳</span></div><div class="value" th:text="'₹ ' + ${#numbers.formatDecimal(monthlySavings,1,'COMMA',2,'POINT')}">₹ 0.00</div><small>Income minus expenses</small></article></section>
+<section class="metric-strip" aria-label="Additional financial metrics">
+<article><span>TRACKED LIQUIDITY</span><strong th:text="'₹ ' + ${#numbers.formatDecimal(trackedLiquidity,1,'COMMA',2,'POINT')}">₹ 0.00</strong><small>Account balances less card balances</small></article>
+<article><span>SAVINGS RATE</span><strong th:text="${savingsRate} + '%'">0%</strong><small>Net monthly savings ÷ income</small></article>
+<article><span>DAILY SAFE TO SPEND</span><strong th:text="'₹ ' + ${#numbers.formatDecimal(dailySafeSpend,1,'COMMA',2,'POINT')}">₹ 0.00</strong><small>Based on monthly budget caps and days remaining</small></article>
+</section>
+<section class="money-moments" aria-label="Everyday money ideas"><div class="moments-heading"><div><p class="eyebrow">SMALL MOMENTS, MORE CLARITY</p><h2>One good next step.</h2></div><div class="moments-controls"><div class="moments-dots" role="tablist" aria-label="Money tips"><button class="moment-dot active" role="tab" aria-label="Money tip 1" aria-selected="true"></button><button class="moment-dot" role="tab" aria-label="Money tip 2" aria-selected="false"></button><button class="moment-dot" role="tab" aria-label="Money tip 3" aria-selected="false"></button></div><button type="button" class="moment-arrow" id="moment-prev" aria-label="Previous tip">←</button><button type="button" class="moment-arrow" id="moment-next" aria-label="Next tip">→</button></div></div><div class="moments-window"><div class="moments-track" id="moments-track"><article class="moment-slide" th:each="moment:${moneyMoments}"><span class="moment-symbol" th:text="${moment.symbol}">✳</span><div><small th:text="${moment.tag}">A MONEY MOMENT</small><h3 th:text="${moment.title}">One good next step.</h3><p th:text="${moment.copy}">Try one small action today.</p><a th:href="${moment.url}"><span th:text="${moment.action}">Explore</span> ↗</a></div><span class="moment-index" th:text="'0' + ${momentStat.count}">01</span></article></div></div></section>
+<section class="analytics-grid">
+<article class="card analytics-card"><div class="panel-heading"><div><p class="eyebrow">THIS MONTH</p><h2>Where it goes</h2></div><span class="health-badge">Category breakdown</span></div>
+<div class="category-breakdown"><div class="category-donut" th:if="${!#lists.isEmpty(categoryStats)}" th:style="'background:' + ${categoryGradient}"><div><b th:text="'₹' + ${#numbers.formatDecimal(categoryTotal,1,'COMMA',0,'POINT')}">₹0</b><small>spent</small></div></div><div class="category-chart-list" th:each="c:${categoryStats}"><div class="chart-row-head"><strong th:text="${c.name}">Category</strong><span th:text="'₹ ' + ${#numbers.formatDecimal(c.amount,1,'COMMA',0,'POINT')} + ' · ' + ${c.percent} + '%'">₹0 · 0%</span></div><div class="chart-track"><i th:style="'width:' + ${c.percent} + '%'"></i></div></div><div th:if="${#lists.isEmpty(categoryStats)}" class="chart-empty">Your category chart will appear after you record expenses.</div></div>
+</article>
+<article class="card analytics-card"><div class="panel-heading"><div><p class="eyebrow">LAST 14 DAYS</p><h2>Daily cash flow</h2></div><span class="health-badge">Income · spend</span></div><div class="flow-legend"><span><i class="legend-income"></i>Income</span><span><i class="legend-expense"></i>Expenses</span></div><div class="flow-bars"><div class="flow-day" th:each="d:${dailyFlow}"><div class="flow-bar-pair"><i class="flow-income-bar" th:style="'height:' + ${d.max.signum()==0?2:T(java.lang.Math).max(3,d.income.multiply(T(java.math.BigDecimal).valueOf(100)).divide(d.max,0,T(java.math.RoundingMode).DOWN).intValue())} + '%' "></i><i class="flow-expense-bar" th:style="'height:' + ${d.max.signum()==0?2:T(java.lang.Math).max(3,d.expense.multiply(T(java.math.BigDecimal).valueOf(100)).divide(d.max,0,T(java.math.RoundingMode).DOWN).intValue())} + '%' "></i></div><small th:text="${d.label}">1</small></div></div><p class="chart-note">Bars compare recorded money in and out each day.</p></article>
+<article class="card analytics-card"><div class="panel-heading"><div><p class="eyebrow">MONTH OVER MONTH</p><h2>Spending by category</h2></div><span class="health-badge" th:text="${currentMonthLabel}">Month</span></div><div th:if="${#lists.isEmpty(comparisons)}" class="chart-empty">Add expenses to compare this month with last month.</div><div class="comparison-row" th:each="c:${comparisons}"><div class="comparison-title"><strong th:text="${c.name}">Category</strong><span><i class="legend-previous"></i><i class="legend-current"></i></span></div><div class="comparison-track"><i class="comparison-previous" th:style="'width:' + ${c.scale.signum()==0?0:c.previous.multiply(T(java.math.BigDecimal).valueOf(100)).divide(c.scale,0,T(java.math.RoundingMode).DOWN).intValue()} + '%' "></i></div><div class="comparison-track"><i class="comparison-current" th:style="'width:' + ${c.scale.signum()==0?0:c.current.multiply(T(java.math.BigDecimal).valueOf(100)).divide(c.scale,0,T(java.math.RoundingMode).DOWN).intValue()} + '%' "></i></div></div><div class="comparison-legend"><span><i class="legend-previous"></i>Last month</span><span><i class="legend-current"></i>This month</span></div></article>
+<article class="card analytics-card rule-card"><div class="panel-heading"><div><p class="eyebrow">A SIMPLE BENCHMARK</p><h2>50 / 30 / 20 guide</h2></div><span class="health-badge">Estimated</span></div><div class="rule-items"><div><span>Needs</span><strong th:text="${needsPercent} + '%'">0%</strong><small>50% guide</small><div class="chart-track"><i class="needs-bar" th:style="'width:' + ${T(java.lang.Math).min(100,needsPercent*2)} + '%'"></i></div></div><div><span>Wants</span><strong th:text="${wantsPercent} + '%'">0%</strong><small>30% guide</small><div class="chart-track"><i class="wants-bar" th:style="'width:' + ${T(java.lang.Math).min(100,wantsPercent*3)} + '%'"></i></div></div><div><span>Savings</span><strong th:text="${savingsBenchmark} + '%'">0%</strong><small>20% guide</small><div class="chart-track"><i class="savings-bar" th:style="'width:' + ${T(java.lang.Math).min(100,savingsBenchmark*5)} + '%'"></i></div></div></div><p class="chart-note">Category names are heuristically grouped; use this as a guide, not financial advice.</p></article>
+</section>
+<div class="dashboard-grid"><section class="card health-card health-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR FINANCIAL WELLBEING</p><h2>Steady progress.</h2></div><span class="health-badge">Monthly view</span></div><div class="health-content"><div class="health-score-ring"><span th:text="${healthScore}">0</span><small>out of 100</small></div><div class="health-copy"><strong th:text="${healthScore >= 75 ? 'You’re building a healthy rhythm.' : (healthScore >= 45 ? 'You’re finding your rhythm.' : 'A few small steps can help.')}">A clear view helps.</strong><p>Your score reflects savings, monthly spending and progress on savings goals. Keep checking in as your plans change.</p><a th:href="@{/budgets}">Review monthly budgets <span>↗</span></a></div></div><div class="month-countdown"><span>MONTH IN PROGRESS</span><b><strong th:text="${daysLeftInMonth}">0</strong> days left</b><div class="month-progress"><i th:style="'width:' + ${(T(java.time.LocalDate).now().getDayOfMonth() * 100 / T(java.time.YearMonth).now().lengthOfMonth())} + '%' "></i></div></div></section>
+<section class="card goals-panel"><div class="panel-heading"><div><p class="eyebrow">LITTLE BY LITTLE</p><h2>Savings goals</h2></div><button class="icon-action" type="button" onclick="document.getElementById('goal-form').scrollIntoView({behavior:'smooth',block:'center'})" aria-label="Add a savings goal">+</button></div><div th:if="${#lists.isEmpty(savingsGoals)}" class="goal-empty"><span>✧</span><strong>Give your next plan a name.</strong><p>Start a goal for something you’re looking forward to.</p></div><div class="goal-row dashboard-goal" th:each="g:${savingsGoals}"><div class="goal-mark">✳</div><div class="goal-details"><strong th:text="${g.goalName}">Goal</strong><small th:text="'₹ ' + ${#numbers.formatDecimal(g.currentAmount,1,'COMMA',0,'POINT')} + ' saved of ₹ ' + ${#numbers.formatDecimal(g.targetAmount,1,'COMMA',0,'POINT')}">₹0 saved</small><div class="goal-progress"><i th:style="'width:' + ${(g.targetAmount.signum() == 0 ? 0 : T(java.lang.Math).min(100, g.currentAmount.multiply(T(java.math.BigDecimal).valueOf(100)).divide(g.targetAmount,0,T(java.math.RoundingMode).DOWN).intValue()))} + '%' "></i></div></div></div><form id="goal-form" method="post" th:action="@{/goals}" class="goal-form compact-goal-form"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><label>New goal<input name="goalName" required placeholder="e.g. A rainy day fund"></label><label>Target amount<input name="targetAmount" type="number" min="0.01" step="0.01" required placeholder="₹ 25,000"></label><button class="button" type="submit">Add goal <span>↗</span></button></form></section></div>
+<section class="accounts-alerts-grid"><article class="card accounts-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR ACCOUNTS</p><h2>Balance breakdown</h2></div><a id="accounts" class="panel-link" th:href="@{/transactions}">Account setup ↗</a></div><div th:if="${#lists.isEmpty(accounts)}" class="chart-empty">Add a bank, card or wallet in your profile to see balances.</div><div class="account-balance-row" th:each="a:${accounts}"><span class="account-type-mark" th:text="${a.accountType == T(com.financemanager.entity.Account.Type).CREDIT_CARD ? '▤' : '◉'}">◉</span><div><strong th:text="${a.accountName}">Account</strong><small th:text="${a.accountType}">SAVINGS</small></div><b th:classappend="${a.accountType == T(com.financemanager.entity.Account.Type).CREDIT_CARD ? 'amount-neg' : 'amount-pos'}" th:text="${a.currency} + ' ' + ${#numbers.formatDecimal(a.balance,1,'COMMA',2,'POINT')}">₹0</b></div><details class="transfer-details"><summary>Transfer between accounts</summary><div class="form-alert error" th:if="${transferError}" th:text="${transferError}"></div><div class="form-alert success" th:if="${transferSuccess}" th:text="${transferSuccess}"></div><form method="post" th:action="@{/transfers}" class="transfer-form"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><label>From<select name="fromAccountId" required><option th:each="a:${accounts}" th:value="${a.id}" th:text="${a.accountName}">Account</option></select></label><label>To<select name="toAccountId" required><option th:each="a:${accounts}" th:value="${a.id}" th:text="${a.accountName}">Account</option></select></label><label>Amount<input type="number" name="amount" min="0.01" step="0.01" required></label><button class="button" type="submit">Transfer</button></form></details></article>
+<article class="card alerts-panel"><div class="panel-heading"><div><p class="eyebrow">SMART CHECK-IN</p><h2>Things to review</h2></div><span class="alert-count" th:text="${#lists.size(alerts)}">0</span></div><div class="alert-message" th:each="a:${alerts}"><span>!</span><p th:text="${a}">Budget alert</p></div><div class="alert-message" th:if="${#lists.isEmpty(alerts)}"><span>✓</span><p>No unusual spikes or budget overruns detected. Keep logging activity to make alerts more useful.</p></div><a class="panel-link" th:href="@{/budgets}">Review budgets ↗</a></article></section>
+<section id="bills" class="card bills-panel"><div class="panel-heading"><div><p class="eyebrow">NEXT 14 DAYS</p><h2>Upcoming bills & renewals</h2></div><span class="health-badge" th:text="${#lists.size(upcomingBills)} + ' scheduled'">0 scheduled</span></div><div class="bill-empty" th:if="${#lists.isEmpty(upcomingBills)}">No upcoming bills yet. Add rent, subscriptions, EMIs or other regular payments.</div><div class="bill-row" th:each="b:${upcomingBills}"><span class="bill-calendar"><strong th:text="${#temporals.format(b.nextDueDate,'dd')}">01</strong><small th:text="${#temporals.format(b.nextDueDate,'MMM')}">OCT</small></span><div class="bill-description"><strong th:text="${b.billName}">Bill name</strong><small th:text="${b.frequency} + ' · due in ' + ${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(),b.nextDueDate)} + ' days'">MONTHLY · due soon</small></div><b th:text="'₹ ' + ${#numbers.formatDecimal(b.amount,1,'COMMA',2,'POINT')}">₹0</b></div><details class="bill-add"><summary>Add a bill reminder</summary><div class="form-alert error" th:if="${billError}" th:text="${billError}"></div><div class="form-alert success" th:if="${billSuccess}" th:text="${billSuccess}"></div><form method="post" th:action="@{/bills}" class="bill-form"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><label>Name<input name="billName" required placeholder="Rent, internet, EMI"></label><label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Next due date<input name="nextDueDate" type="date" th:value="${T(java.time.LocalDate).now().toString()}" required></label><label>Repeats<select name="frequency"><option th:each="f:${T(com.financemanager.entity.RecurringBill.Frequency).values()}" th:value="${f}" th:text="${f}">MONTHLY</option></select></label><button class="button" type="submit">Save reminder</button></form></details></section>
+<section class="card budget-preview"><div class="panel-heading"><div><p class="eyebrow">A LITTLE STRUCTURE GOES A LONG WAY</p><h2>Monthly budgets</h2></div><a class="panel-link" th:href="@{/budgets}">See all budgets <span>↗</span></a></div><div class="budget-meter-list" th:if="${!#lists.isEmpty(budgetStats)}"><div class="budget-meter" th:each="b:${budgetStats}"><div class="budget-meter-head"><strong th:text="${b.name}">Category</strong><span th:text="'₹ ' + ${#numbers.formatDecimal(b.spent,1,'COMMA',0,'POINT')} + ' of ₹ ' + ${#numbers.formatDecimal(b.limit,1,'COMMA',0,'POINT')}">₹0 of ₹0</span></div><div class="budget-meter-track"><i th:class="${b.tone}" th:style="'width:' + ${b.percent} + '%' "></i></div><small th:text="${b.actualPercent} + '% used'"></small></div></div><div class="budget-empty" th:if="${#lists.isEmpty(budgets)}"><span>✧</span><div><strong>Your plan starts with one number.</strong><small>Add a monthly category limit to keep spending in view.</small></div><a th:href="@{/budgets}">Set a budget ↗</a></div></section>
+<section class="card activity-panel"><div class="panel-heading"><div><p class="eyebrow">THE LATEST</p><h2>Recent activity</h2></div><a class="panel-link" th:href="@{/transactions}">All transactions <span>↗</span></a></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Details</th><th>Account</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead><tbody><tr th:each="t:${recentTransactions}"><td th:text="${t.date}">Date</td><td><strong th:text="${t.title}">Details</strong><small class="activity-category" th:text="${t.category}">Category</small></td><td th:text="${t.account}">Account</td><td><span class="activity-type" th:classappend="${t.type == 'Income' ? 'income-type' : 'expense-type'}" th:text="${t.type}">Type</span></td><td style="text-align:right" th:class="${t.type == 'Income' ? 'amount-pos' : 'amount-neg'}" th:text="${t.sign} + ' ₹ ' + ${#numbers.formatDecimal(t.amount,1,'COMMA',2,'POINT')}">₹0</td></tr></tbody></table></div><p class="empty-state" th:if="${#lists.isEmpty(recentTransactions)}">Your first transaction will show up here.</p></section>
+<section class="dashboard-quick"><div><p class="eyebrow">KEEP IT MOVING</p><h2>What would you like to do?</h2></div><div class="quick-links"><a th:href="@{/addExpense}"><span class="quick-icon">↘</span><b>Log an expense</b><small>Capture a purchase</small><i>↗</i></a><a th:href="@{/addIncome}"><span class="quick-icon">↗</span><b>Add income</b><small>Record money in</small><i>↗</i></a><a th:href="@{/statements/import}"><span class="quick-icon">⇧</span><b>Upload CSV</b><small>Import a statement</small><i>↗</i></a><a th:href="@{/reports/download(format='pdf')}"><span class="quick-icon">↓</span><b>Monthly report</b><small>Download a PDF</small><i>↗</i></a></div></section>
+<footer class="dashboard-footer"><span>CLARITY · YOUR MONEY IN PERSPECTIVE</span><span>Every small step counts. ✳</span></footer>
+</main></div><script>(function(){const el=document.getElementById('live-clock');function tick(){if(el)el.textContent=new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date())}tick();setInterval(tick,1000);const track=document.getElementById('moments-track');if(!track)return;const dots=[...document.querySelectorAll('.moment-dot')];let index=0,timer;function show(n){index=(n+dots.length)%dots.length;track.style.transform='translate3d(-'+(index*100/3)+'%,0,0)';dots.forEach((dot,i)=>{dot.classList.toggle('active',i===index);dot.setAttribute('aria-selected',i===index?'true':'false')});clearInterval(timer);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>show(index+1),8500)}dots.forEach((dot,i)=>dot.addEventListener('click',()=>show(i)));document.getElementById('moment-prev').addEventListener('click',()=>show(index-1));document.getElementById('moment-next').addEventListener('click',()=>show(index+1));show(0)})();</script></body></html>

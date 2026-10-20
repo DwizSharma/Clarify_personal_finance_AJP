@@ -1,7 +1,7 @@
 <div xmlns:th="http://www.thymeleaf.org" th:fragment="sidebar(active)" class="sidebar">
     <div class="brand">
         <span class="brand-mark">₹</span>
-        <span class="brand-name">FinanceManager</span>
+        <span class="brand-name">clarity<span class="brand-period">.</span></span>
     </div>
     <nav class="side-nav">
         <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? 'active'">
@@ -19,6 +19,7 @@
         <a th:href="@{/transactions}" th:classappend="${active == 'transactions'} ? 'active'">Transactions</a>
         <a th:href="@{/budgets}" th:classappend="${active == 'budgets'} ? 'active'">Budgets & alerts</a>
         <a th:href="@{/integrations/upi}" th:classappend="${active == 'upi'} ? 'active'">Payment apps</a>
+        <a th:href="@{/profile}" th:classappend="${active == 'profile'} ? 'active'">Profile & connections</a>
         <a th:href="@{/settings/theme}" th:classappend="${active == 'settings'} ? 'active'">Appearance</a>
     </nav>
     <form th:action="@{/logout}" method="post" class="logout-form"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit" class="logout-link">
@@ -26,6 +27,13 @@
         Logout
     </button></form>
     <a th:href="@{/reports/download(format='pdf')}" class="logout-link">Download monthly report</a>
+    <details class="assistant-widget"><summary aria-label="Ask the Clarity guide">✳<span>Ask Clarity</span></summary>
+        <div class="assistant-panel"><div class="assistant-header"><span class="assistant-avatar">✳</span><div><strong>Your finance guide</strong><small>Here to help you find your way</small></div></div>
+            <div class="assistant-messages" id="assistant-messages" aria-live="polite"><p class="assistant-reply">Ask about money, budgets, or anything in the app.</p><div class="assistant-suggestions"><button type="button">How do I set a budget?</button><button type="button">How can I track savings?</button><button type="button">Where is my PDF report?</button></div></div>
+            <form class="assistant-form" id="assistant-form" th:attr="data-csrf-token=${_csrf.token},data-csrf-header=${_csrf.headerName}"><input id="assistant-input" type="text" placeholder="Ask anything…" aria-label="Ask about money or the app" maxlength="2000" required><button aria-label="Send question">↑</button></form><small class="assistant-privacy">AI answers use the message you send. Keep passwords and PINs private.</small>
+        </div>
+    </details>
     <button class="quick-add-fab" type="button" onclick="document.getElementById('quick-add-dialog').showModal()" aria-label="Quick add transaction">+</button>
     <dialog id="quick-add-dialog" class="quick-add-dialog"><button type="button" class="dialog-close" onclick="this.closest('dialog').close()" aria-label="Close">×</button><h2>Quick add</h2><p>Choose the type of transaction to record.</p><a class="button" th:href="@{/addExpense}">Add expense</a><a class="button secondary" th:href="@{/addIncome}">Add income</a></dialog>
+    <script th:src="@{/js/assistant.js}" defer></script>
 </div>

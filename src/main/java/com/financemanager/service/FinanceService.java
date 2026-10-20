@@ -131,6 +131,14 @@ public class FinanceService {
         return expenseRepository.sumByUserAndDateRange(userId, month.atDay(1), month.atEndOfMonth());
     }
 
+    public BigDecimal getIncomeForDay(Long userId, LocalDate day) {
+        return incomeRepository.sumByUserAndDateRange(userId, day, day);
+    }
+
+    public BigDecimal getExpenseForDay(Long userId, LocalDate day) {
+        return expenseRepository.sumByUserAndDateRange(userId, day, day);
+    }
+
     public List<Income> getIncomeHistory(Long userId) {
         return incomeRepository.findByUserIdOrderByDateDesc(userId);
     }

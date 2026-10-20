@@ -3,6 +3,7 @@ package com.financemanager.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,8 @@ public class Expense {
 
     @Column(nullable = false)
     private LocalDate date;
+
+    private LocalDateTime recordedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -69,6 +72,9 @@ public class Expense {
 
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
+    public LocalDateTime getRecordedAt() { return recordedAt; }
+    @PrePersist
+    public void setRecordedAtIfMissing() { if (recordedAt == null) recordedAt = LocalDateTime.now(); }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
