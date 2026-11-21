@@ -131,3 +131,28 @@ continues to update existing installations through `ddl-auto=update`.
 6. Visit `http://localhost:8082/` for the landing page. Create an account, then log in. The application dashboard is at `http://localhost:8082/dashboard`.
 
 The app uses the local MySQL database `finance_manager`; it does not use an embedded database. The default MySQL username is `root`, and the password is read from the IntelliJ `DB_PASSWORD` environment variable. You can also launch it from IntelliJ's Maven tool window with `spring-boot:run` after setting the same environment variables in the Maven run configuration.
+
+## 📸 Screenshots
+
+| Dashboard | Transactions | Budget |
+|---|---|---|
+| *Coming soon* | *Coming soon* | *Coming soon* |
+
+## 🧰 Setup & Run Locally
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/DwizSharma/Clarify_personal_finance_AJP.git
+cd Clarify_personal_finance_AJP
+
+# 2. Set up MySQL
+mysql -u root -p < database/01_create_database.sql
+mysql -u root -p < database/03_create_tables.sql
+
+# 3. Run the app
+export DB_USERNAME=root
+export DB_PASSWORD=your_password
+./start-clarify.sh
+```
+
+## ⭐ Star this repo if you found it useful!
