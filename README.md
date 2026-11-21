@@ -57,13 +57,15 @@ mvn spring-boot:run
 ```
 
 In IntelliJ, open this directory as a Maven project, wait for dependency import, then
-run `FinanceManagerApplication`. Open **http://localhost:8081/register** to create an
-account, then log in at **http://localhost:8081/login**. The port is set in
+run `FinanceManagerApplication`. Open **http://localhost:8082/register** to create an
+account, then log in at **http://localhost:8082/login**. The port is set in
 `application.properties`.
 
 ## Dashboard insights and statement tools
 
-The dashboard summarizes signed balances across accounts, current-month income and expenses, savings rate, and a per-day spend guide. It also shows category spend, a 14-day cash-flow chart, prior-month category comparisons, budget progress and threshold alerts, estimated 50/30/20 category allocation, account balances, savings goals, and bills due within 14 days. The 50/30/20 grouping is a heuristic based on category names; review it against your own needs.
+The dashboard summarizes tracked balances, current-month income and expenses, savings rate, and a per-day spend guide. It also shows a cash-flow Sankey, a 26-week spending heatmap, a 14-day cash-flow chart, prior-month category comparisons, budget progress and threshold alerts, estimated 50/30/20 category allocation, savings goals, and upcoming bills. Category groupings are estimates based on category names.
+
+Add bank, wallet, savings, checking, and credit-card accounts under **Profile → Bank & money accounts**. Give each account a household member label to keep family finances organized under one login. Enter credit-card amounts owed as positive amounts; Clarity stores them as liabilities in the overview. These are manually tracked accounts and do not connect to or move money at a bank.
 
 Use **Transfer between accounts** to move a positive amount between accounts in the same currency. Use **Upload CSV** to import up to 1,000 rows (2 MB maximum). CSV columns are `date,type,amount,category,description`; `account` is optional. Dates must use `YYYY-MM-DD`, type must be `income` or `expense`, and category/account names must match entries already in the app. An example is available at `/example-statement.csv`.
 
@@ -124,8 +126,8 @@ continues to update existing installations through `ddl-auto=update`.
 1. Install JDK 17 or newer and MySQL 8. In MySQL, create the local database with `CREATE DATABASE finance_manager;` (or run `database/01_create_database.sql`).
 2. Open IntelliJ IDEA and choose **File → Open**, then select `Desktop/AJP_Project/project` (the directory containing `pom.xml`). Choose **Open as Project** and trust the project when prompted.
 3. In **File → Project Structure → Project**, set the Project SDK to JDK 17 or newer. Let IntelliJ import the Maven dependencies from `pom.xml` and finish indexing.
-4. Open **Run → Edit Configurations… → + → Spring Boot**. Set the main class to `com.financemanager.FinanceManagerApplication` and set the working directory to this project directory. Add environment variables `DB_USERNAME=root`, `DB_PASSWORD=` (set your local MySQL password after the equals sign; leave it empty if root has no password), and `OPENAI_API_KEY=` (paste your OpenAI API key after the equals sign to enable AI answers in the in-app guide). You can optionally set `OPENAI_MODEL` if your API project uses a different available model.
+4. Open **Run → Edit Configurations… → + → Spring Boot**. Set the main class to `com.financemanager.FinanceManagerApplication` and set the working directory to this project directory. Add environment variables `DB_USERNAME=root` and `DB_PASSWORD=` (set your local MySQL password after the equals sign; leave it empty if root has no password).
 5. Click **Apply**, **OK**, then the green **Run** button. Wait for the Spring Boot started message in the Run window.
-6. Visit `http://localhost:8081/` for the landing page. Create an account, then log in. The application dashboard is at `http://localhost:8081/dashboard`.
+6. Visit `http://localhost:8082/` for the landing page. Create an account, then log in. The application dashboard is at `http://localhost:8082/dashboard`.
 
-The app uses the local MySQL database `finance_manager`; it does not use an embedded database. The default MySQL username is `root`, and the password is read from the IntelliJ `DB_PASSWORD` environment variable. The Clarity guide uses the OpenAI Responses API when `OPENAI_API_KEY` is configured; the key stays server-side and is never sent to the browser. You can also launch it from IntelliJ's Maven tool window with `spring-boot:run` after setting the same environment variables in the Maven run configuration.
+The app uses the local MySQL database `finance_manager`; it does not use an embedded database. The default MySQL username is `root`, and the password is read from the IntelliJ `DB_PASSWORD` environment variable. You can also launch it from IntelliJ's Maven tool window with `spring-boot:run` after setting the same environment variables in the Maven run configuration.

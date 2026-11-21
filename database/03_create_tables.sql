@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS accounts (
     id            BIGINT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
     account_name  VARCHAR(255)   NOT NULL,
+    institution_name VARCHAR(100),
+    member_name   VARCHAR(80),
     account_type  VARCHAR(30)    NOT NULL,
     balance       DECIMAL(19,2)  NOT NULL DEFAULT 0,
     currency      VARCHAR(3)     NOT NULL DEFAULT 'INR',

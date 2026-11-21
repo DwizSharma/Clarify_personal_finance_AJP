@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add Expense - Personal Finance Manager</title>
+    <title>Add Expense - Clarity</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -36,7 +36,7 @@
                 <select name="categoryId" id="primary-category" required>
                     <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
                 </select>
-                <label>Account</label><select name="accountId"><option value="">No account selected</option><option th:each="a:${accounts}" th:value="${a.id}" th:text="${a.accountName} + ' (' + ${a.currency} + ')' "></option></select>
+                <label>Account</label><select name="accountId"><option value="">No account selected</option><option th:each="a:${accounts}" th:value="${a.id}" th:text="${a.accountName} + ' · ' + ${a.memberName ?: 'Me'} + ' · ' + ${a.currency} "></option></select>
                 <label>Payment method</label><select name="paymentMethod"><option th:each="method:${T(com.financemanager.entity.PaymentMethod).values()}" th:value="${method}" th:text="${method}"></option></select>
 
                 <div class="split-section">

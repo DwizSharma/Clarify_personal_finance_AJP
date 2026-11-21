@@ -5,6 +5,8 @@ import com.financemanager.entity.User;
 import com.financemanager.repository.CategoryRepository;
 import com.financemanager.repository.AccountRepository;
 import com.financemanager.repository.ExpenseRepository;
+import com.financemanager.repository.SavingsGoalRepository;
+import com.financemanager.entity.SavingsGoal;
 import com.financemanager.entity.Account;
 import com.financemanager.entity.PaymentMethod;
 import com.financemanager.service.FinanceService;
@@ -32,15 +34,17 @@ public class ExpenseController {
     private final CategoryRepository categoryRepository;
     private final AccountRepository accountRepository;
     private final ExpenseRepository expenseRepository;
+    private final SavingsGoalRepository savingsGoals;
 
     @Autowired
     public ExpenseController(FinanceService financeService, UserService userService,
-                              CategoryRepository categoryRepository, AccountRepository accountRepository, ExpenseRepository expenseRepository) {
+                              CategoryRepository categoryRepository, AccountRepository accountRepository, ExpenseRepository expenseRepository, SavingsGoalRepository savingsGoals) {
         this.financeService = financeService;
         this.userService = userService;
         this.categoryRepository = categoryRepository;
         this.accountRepository = accountRepository;
         this.expenseRepository = expenseRepository;
+        this.savingsGoals = savingsGoals;
     }
 
     @GetMapping("/addExpense")
@@ -74,6 +78,7 @@ public class ExpenseController {
             if (account != null) { saved.setAccount(account); account.setBalance(account.getBalance().subtract(amount)); accountRepository.save(account); }
             if (paymentMethod != null) saved.setPaymentMethod(paymentMethod);
             expenseRepository.save(saved);
+            allocateRoundUp(user, amount);
         } catch (Exception ex) {
             model.addAttribute("error", "Could not save expense: " + ex.getMessage());
             model.addAttribute("categories", categoryRepository.findByType(Category.Type.EXPENSE));
@@ -82,9 +87,31 @@ public class ExpenseController {
         }
 
         String budgetWarning = financeService.checkBudgetStatus(user.getId(), categoryId, date);
+        financeService.checkExpenseAnomaly(user.getId(), categoryId, category.getName(), amount, date);
         model.addAttribute("budgetWarning", budgetWarning);
 
         return "redirect:/dashboard";
+    }
+
+    private void allocateRoundUp(User user, BigDecimal amount) {
+        BigDecimal hundred = BigDecimal.valueOf(100);
+        BigDecimal roundUp = amount.divide(hundred, 0, java.math.RoundingMode.CEILING)
+                .multiply(hundred).subtract(amount).setScale(2, java.math.RoundingMode.HALF_UP);
+        if (roundUp.signum() <= 0) return;
+        SavingsGoal bucket = savingsGoals.findByUserId(user.getId()).stream()
+                .filter(g -> g.getGoalName().equalsIgnoreCase("Emergency Fund") || g.getGoalName().equalsIgnoreCase("Gadget Goal"))
+                .findFirst().orElseGet(() -> {
+                    SavingsGoal goal = new SavingsGoal();
+                    goal.setGoalName("Emergency Fund");
+                    goal.setTargetAmount(new BigDecimal("25000.00"));
+                    goal.setCurrentAmount(BigDecimal.ZERO);
+                    goal.setLocked(true);
+                    goal.setUser(user);
+                    return savingsGoals.save(goal);
+                });
+        bucket.setLocked(true);
+        bucket.setCurrentAmount(bucket.getCurrentAmount().add(roundUp));
+        savingsGoals.save(bucket);
     }
 
     /** Turns the parallel splitCategoryId[]/splitAmount[]/splitNote[] form arrays into SplitInputs. */

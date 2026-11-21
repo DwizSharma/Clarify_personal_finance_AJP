@@ -9,7 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 <script th:src="@{/js/theme.js}"></script></head>
 <body class="landing-page">
-<header class="landing-nav"><a class="landing-brand" th:href="@{/}"><span class="brand-mark">c</span><span>clarity<span class="brand-period">.</span></span></a>
+<header class="landing-nav"><a class="landing-brand" th:href="@{/}"><span class="brand-mark">C</span><span>Clarity<span class="brand-period">.</span></span></a>
     <nav aria-label="Main navigation"><a href="#product">Product</a><a href="#how-it-works">How it works</a><a href="#for-everyone">For everyone</a></nav>
     <div class="landing-actions"><a class="landing-login" th:href="@{/login}">Log in</a><a class="button landing-cta" th:href="@{/register}">Get started <span>↗</span></a></div>
 </header>
@@ -18,10 +18,11 @@
         <div class="hero-copy"><p class="eyebrow"><span class="eyebrow-dot"></span> YOUR MONEY, WITH A LITTLE MORE CLARITY</p>
             <h1>Feel good about<br>where it <em>goes.</em></h1>
             <p class="hero-lede">A calmer way to understand spending, build savings and make the next money decision with confidence.</p>
-            <div class="hero-actions"><a class="button landing-cta" th:href="@{/register}">Start with clarity <span>↗</span></a><a class="text-link" href="#product">See what’s inside <span>↓</span></a></div>
+            <div class="hero-actions"><a class="button landing-cta" th:href="@{/register}">Start with Clarity <span>↗</span></a><a class="text-link" href="#product">See what’s inside <span>↓</span></a></div>
             <div class="hero-proof"><div class="avatar-stack"><span>R</span><span>A</span><span>M</span><span>+</span></div><span>Made for real life, at every stage.</span></div>
         </div>
         <div class="hero-art" aria-label="Preview of the Clarity finance dashboard">
+            <img class="hero-finance-illustration" th:src="@{/images/finance-growth.svg}" alt="">
             <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
             <div class="preview-card balance-preview"><div class="preview-top"><span>YOUR TOTAL BALANCE</span><span class="live-pill"><i></i> LIVE</span></div><strong>₹ 2,48,560<span>.00</span></strong><div class="preview-change"><span>↗ 12.8%</span> <span>this month</span></div><svg class="sparkline" viewBox="0 0 420 94" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sparkFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#bcf277" stop-opacity=".35"/><stop offset="1" stop-color="#bcf277" stop-opacity="0"/></linearGradient></defs><path d="M0 76 C28 72 31 60 55 65 S88 57 110 61 S144 45 166 54 S194 42 218 49 S248 23 272 35 S298 39 320 25 S344 34 365 19 S393 22 420 5 L420 94 L0 94Z" fill="url(#sparkFill)"/><path d="M0 76 C28 72 31 60 55 65 S88 57 110 61 S144 45 166 54 S194 42 218 49 S248 23 272 35 S298 39 320 25 S344 34 365 19 S393 22 420 5" fill="none" stroke="#c3f47f" stroke-width="3" vector-effect="non-scaling-stroke"/></svg><div class="chart-labels"><span>JUN 01</span><span>JUN 08</span><span>JUN 15</span><span>JUN 22</span><span>TODAY</span></div></div>
             <div class="preview-card spend-preview"><div class="mini-heading"><span class="mini-icon mint">↘</span><span><small>THIS MONTH</small><b>Spending</b></span><span class="mini-more">•••</span></div><strong>₹ 32,480</strong><div class="spend-meter"><i></i></div><small>You're <b>68%</b> through your monthly plan</small></div>
@@ -44,7 +45,7 @@
     <section class="audience-section" id="for-everyone"><div><p class="eyebrow">DESIGNED AROUND REAL LIFE</p><h2>One place for<br><em>every kind</em> of plan.</h2></div><div class="audience-grid"><article><span>01</span><b>For your home</b><p>Keep household expenses and family savings goals in view, together.</p><a th:href="@{/register}">Explore personal finance ↗</a></article><article><span>02</span><b>For your work</b><p>Track institute or office spending with clear categories and monthly budgets.</p><a th:href="@{/register}">Explore team workflows ↗</a></article><article><span>03</span><b>For growing up</b><p>Build a healthy money habit with approachable goals and everyday tracking.</p><a th:href="@{/register}">Start learning together ↗</a></article></div></section>
     <section class="closing-cta"><div class="closing-decoration">✳</div><p class="eyebrow">A FRESH START, ANY DAY</p><h2>Ready to see your<br>money <em>more clearly?</em></h2><a class="button landing-cta" th:href="@{/register}">Create your free account <span>↗</span></a><span>No pressure. Just a better picture.</span></section>
 </main>
-<footer class="landing-footer"><a class="landing-brand" th:href="@{/}"><span class="brand-mark">c</span><span>clarity<span class="brand-period">.</span></span></a><span>Clarity Finance Manager · A calmer way to manage money.</span><div><a th:href="@{/login}">Log in</a><a th:href="@{/register}">Create account</a></div></footer>
+<footer class="landing-footer"><a class="landing-brand" th:href="@{/}"><span class="brand-mark">C</span><span>Clarity<span class="brand-period">.</span></span></a><span>Clarity Clarity · A calmer way to manage money.</span><div><a th:href="@{/login}">Log in</a><a th:href="@{/register}">Create account</a></div></footer>
 <script>
 (function(){const track=document.getElementById('feature-track'),slides=[...track.children],dots=[...document.querySelectorAll('.gallery-dot')];let active=0;function go(i){active=(i+slides.length)%slides.length;track.style.transform='translate3d(-'+(active*100/3)+'%,0,0)';dots.forEach((d,n)=>{d.classList.toggle('active',n===active);d.setAttribute('aria-selected',n===active?'true':'false')})}dots.forEach((d,i)=>d.addEventListener('click',()=>go(i)));document.getElementById('gallery-prev').addEventListener('click',()=>go(active-1));document.getElementById('gallery-next').addEventListener('click',()=>go(active+1));let start=0;track.addEventListener('touchstart',e=>start=e.touches[0].clientX,{passive:true});track.addEventListener('touchend',e=>{const delta=e.changedTouches[0].clientX-start;if(Math.abs(delta)>50)go(active+(delta<0?1:-1))},{passive:true})})();
 </script>

@@ -4,6 +4,7 @@ import com.financemanager.entity.Expense;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,4 +32,20 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     BigDecimal sumByUserAndDateRange(@Param("userId") Long userId,
                                       @Param("start") LocalDate start,
                                       @Param("end") LocalDate end);
+
+    @Query("SELECT e.date, SUM(e.amount) FROM Expense e " +
+           "WHERE e.user.id = :userId AND e.date BETWEEN :start AND :end " +
+           "GROUP BY e.date")
+    List<Object[]> dailyTotals(@Param("userId") Long userId,
+                               @Param("start") LocalDate start,
+                               @Param("end") LocalDate end);
+
+    @Query("SELECT e.description FROM Expense e WHERE e.user.id = :userId " +
+           "AND e.description IS NOT NULL AND e.description <> '' " +
+           "GROUP BY e.description ORDER BY MAX(e.date) DESC")
+    List<String> findRecentDescriptions(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("SELECT e.user.id, e.description, e.amount, e.date FROM Expense e " +
+           "WHERE e.description IS NOT NULL AND e.description <> '' ORDER BY e.user.id, e.date")
+    List<Object[]> findRecurringScanRows();
 }

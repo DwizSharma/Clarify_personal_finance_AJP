@@ -103,10 +103,27 @@ public class FinanceService {
                         notificationRepository.save(new Notification(message, userFor(userId)));
                         return message;
                     }
+                    if (date.getDayOfMonth() < 15 && spent.multiply(BigDecimal.valueOf(100))
+                            .compareTo(budget.getMonthlyLimit().multiply(BigDecimal.valueOf(80))) >= 0) {
+                        String message = String.format("Early budget alert: %s has reached at least 80%% of its monthly limit before the 15th.", budget.getCategory().getName());
+                        notificationRepository.save(new Notification(message, userFor(userId)));
+                        return message;
+                    }
                     return String.format("Within budget: %.2f of %.2f used.",
                             spent, budget.getMonthlyLimit());
                 })
                 .orElse("No budget set for this category.");
+    }
+
+    public void checkExpenseAnomaly(Long userId, Long categoryId, String categoryName, BigDecimal amount, LocalDate date) {
+        if (date == null || amount == null || amount.signum() <= 0) return;
+        LocalDate start = date.minusDays(30);
+        LocalDate end = date.minusDays(1);
+        if (end.isBefore(start)) return;
+        BigDecimal average = transactionSplitRepository.averageByUserAndCategoryAndDateRange(userId, categoryId, start, end);
+        if (average.signum() > 0 && amount.compareTo(average.multiply(BigDecimal.valueOf(2))) > 0) {
+            notificationRepository.save(new Notification(String.format("Unusual expense: %.2f is more than twice the 30-day average of %.2f for %s.", amount, average, categoryName), userFor(userId)));
+        }
     }
 
     private User userFor(Long userId) {

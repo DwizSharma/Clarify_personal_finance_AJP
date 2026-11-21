@@ -2,6 +2,7 @@ package com.financemanager.controller;
 
 import com.financemanager.entity.*;
 import com.financemanager.repository.*;
+import com.financemanager.entity.WishVaultItem;
 import com.financemanager.service.FinanceService;
 import com.financemanager.service.UserService;
 import com.financemanager.service.FinancialHealthService;
@@ -27,11 +28,14 @@ public class DashboardController {
     private final TransactionSplitRepository splits;
     private final CategoryRepository categories;
     private final RecurringBillRepository recurringBills;
+    private final ExpenseRepository expenses;
+    private final NotificationRepository notifications;
+    private final WishVaultRepository wishes;
 
     public DashboardController(FinanceService finance, UserService users, FinancialHealthService health,
-                               SavingsGoalRepository goals, AccountRepository accounts, TransactionSplitRepository splits, CategoryRepository categories, RecurringBillRepository recurringBills) {
+                               SavingsGoalRepository goals, AccountRepository accounts, TransactionSplitRepository splits, CategoryRepository categories, RecurringBillRepository recurringBills, ExpenseRepository expenses, NotificationRepository notifications, WishVaultRepository wishes) {
         this.finance = finance; this.users = users; this.health = health; this.goals = goals;
-        this.accounts = accounts; this.splits = splits; this.categories = categories; this.recurringBills=recurringBills;
+        this.accounts = accounts; this.splits = splits; this.categories = categories; this.recurringBills=recurringBills; this.expenses=expenses; this.notifications=notifications; this.wishes=wishes;
     }
 
     @GetMapping("/dashboard")
@@ -43,7 +47,7 @@ public class DashboardController {
         BigDecimal expense = finance.getMonthlyExpense(user.getId(), month);
         BigDecimal savings = income.subtract(expense);
         int daysLeft = Math.max(1, month.lengthOfMonth() - today.getDayOfMonth() + 1);
-        List<Account> accountRows = accounts.findByUserId(user.getId());
+        List<Account> accountRows = accounts.findByUserIdOrderByMemberNameAscAccountNameAsc(user.getId());
         BigDecimal liquidity = BigDecimal.ZERO;
         // Account balances are stored as signed amounts; card purchases are recorded as negative balances.
         for (Account a : accountRows) liquidity = liquidity.add(a.getBalance());
@@ -54,6 +58,7 @@ public class DashboardController {
         model.addAttribute("user", user);
         model.addAttribute("healthScore", health.score(user.getId()));
         model.addAttribute("savingsGoals", goals.findByUserId(user.getId()));
+        model.addAttribute("wishItems", wishes.findByUserIdAndStatusInOrderByExpiresAtAsc(user.getId(), List.of(WishVaultItem.Status.WAITING, WishVaultItem.Status.READY)));
         model.addAttribute("netBalance", finance.getNetBalance(user.getId()));
         model.addAttribute("trackedLiquidity", liquidity);
         model.addAttribute("monthlyIncome", income);
@@ -101,6 +106,22 @@ public class DashboardController {
         model.addAttribute("categoryStats", categoryStats.stream().limit(6).toList());
         model.addAttribute("categoryTotal", categorized);
 
+        LocalDate heatmapStart = today.minusDays(181);
+        Map<LocalDate, BigDecimal> heatmapTotals = new HashMap<>();
+        for (Object[] row : expenses.dailyTotals(user.getId(), heatmapStart, today)) {
+            heatmapTotals.put((LocalDate) row[0], (BigDecimal) row[1]);
+        }
+        BigDecimal heatmapMax = heatmapTotals.values().stream().max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+        List<Map<String, Object>> spendingHeatmap = new ArrayList<>();
+        for (LocalDate day = heatmapStart; !day.isAfter(today); day = day.plusDays(1)) {
+            BigDecimal amount = heatmapTotals.getOrDefault(day, BigDecimal.ZERO);
+            int level = amount.signum() == 0 || heatmapMax.signum() == 0 ? 0 :
+                    Math.min(4, Math.max(1, amount.multiply(BigDecimal.valueOf(4)).divide(heatmapMax, 0, RoundingMode.CEILING).intValue()));
+            spendingHeatmap.add(Map.of("date", day, "amount", amount, "level", level));
+        }
+        model.addAttribute("spendingHeatmap", spendingHeatmap);
+        model.addAttribute("heatmapStart", heatmapStart);
+
         List<Map<String,Object>> daily = new ArrayList<>();
         for (int offset = 13; offset >= 0; offset--) {
             LocalDate date = today.minusDays(offset);
@@ -126,6 +147,8 @@ public class DashboardController {
         recent.sort((a,b)->((LocalDate)b.get("date")).compareTo((LocalDate)a.get("date")));
         model.addAttribute("recentTransactions", recent.stream().limit(8).toList());
         List<String> alerts = new ArrayList<>(budgetStats.stream().filter(b->(int)b.get("actualPercent")>=100).map(b->"Budget exceeded: " + b.get("name") + " is over its monthly limit.").toList());
+        notifications.findByUserIdOrderByCreatedAtDesc(user.getId()).stream().limit(3)
+                .map(Notification::getMessage).forEach(alerts::add);
         LocalDate windowStart=today.minusDays(29), priorStart=windowStart.minusDays(30), priorEnd=windowStart.minusDays(1);
         for(Category c:userExpenseCategories(user.getId())) {
             BigDecimal recentSpend=splits.sumByUserAndCategoryAndDateRange(user.getId(),c.getId(),windowStart,today);

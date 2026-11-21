@@ -2,6 +2,8 @@ package com.financemanager.controller;
 
 import com.financemanager.entity.FinanceConnection;
 import com.financemanager.entity.User;
+import com.financemanager.entity.Account;
+import com.financemanager.repository.AccountRepository;
 import com.financemanager.repository.FinanceConnectionRepository;
 import com.financemanager.repository.UserRepository;
 import com.financemanager.service.UserService;
@@ -17,17 +19,20 @@ public class ProfileController {
     private final UserService users;
     private final UserRepository userRepository;
     private final FinanceConnectionRepository connections;
+    private final AccountRepository accounts;
 
-    public ProfileController(UserService users, UserRepository userRepository, FinanceConnectionRepository connections) {
+    public ProfileController(UserService users, UserRepository userRepository, FinanceConnectionRepository connections, AccountRepository accounts) {
         this.users = users;
         this.userRepository = userRepository;
         this.connections = connections;
+        this.accounts = accounts;
     }
 
     @GetMapping("/profile")
     public String profile(@AuthenticationPrincipal UserDetails principal, Model model) {
         User user = users.findByUsername(principal.getUsername());
         model.addAttribute("user", user);
+        model.addAttribute("trackedAccounts", accounts.findByUserIdOrderByMemberNameAscAccountNameAsc(user.getId()));
         var userConnections = connections.findByUserIdOrderByCreatedAtDesc(user.getId());
         model.addAttribute("connections", userConnections);
         model.addAttribute("banks", userConnections.stream()
@@ -35,6 +40,36 @@ public class ProfileController {
         model.addAttribute("paymentApps", userConnections.stream()
                 .filter(c -> c.getType() == FinanceConnection.Type.PAYMENT_APP).toList());
         return "profile";
+    }
+
+    @PostMapping("/profile/accounts")
+    public String addAccount(@AuthenticationPrincipal UserDetails principal,
+                             @RequestParam String institutionName,
+                             @RequestParam String accountName,
+                             @RequestParam Account.Type accountType,
+                             @RequestParam(required = false) String memberName,
+                             @RequestParam java.math.BigDecimal balance,
+                             @RequestParam(defaultValue = "INR") String currency,
+                             RedirectAttributes redirect) {
+        String bank = institutionName.trim();
+        String label = accountName.trim();
+        String member = memberName == null || memberName.isBlank() ? "Me" : memberName.trim();
+        String currencyCode = currency.trim().toUpperCase(java.util.Locale.ROOT);
+        if (bank.isBlank() || label.isBlank() || balance.signum() < 0 || !currencyCode.matches("[A-Z]{3}")) {
+            redirect.addFlashAttribute("profileError", "Enter a bank, account label, non-negative balance and a 3-letter currency code.");
+            return "redirect:/profile#tracked-accounts";
+        }
+        Account account = new Account();
+        account.setInstitutionName(limit(bank, 100));
+        account.setAccountName(limit(label, 100));
+        account.setMemberName(limit(member, 80));
+        account.setAccountType(accountType);
+        account.setCurrency(currencyCode);
+        account.setBalance(accountType == Account.Type.CREDIT_CARD ? balance.negate() : balance);
+        account.setUser(users.findByUsername(principal.getUsername()));
+        accounts.save(account);
+        redirect.addFlashAttribute("profileMessage", "Account added to your household overview.");
+        return "redirect:/profile#tracked-accounts";
     }
 
     @PostMapping("/profile/email")

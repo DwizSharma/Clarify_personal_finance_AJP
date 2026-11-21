@@ -24,4 +24,12 @@ public interface TransactionSplitRepository extends JpaRepository<TransactionSpl
                                                  @Param("categoryId") Long categoryId,
                                                  @Param("start") LocalDate start,
                                                  @Param("end") LocalDate end);
+
+    @Query("SELECT COALESCE(AVG(s.amount), 0) FROM TransactionSplit s " +
+           "WHERE s.expense.user.id = :userId AND s.category.id = :categoryId " +
+           "AND s.expense.date BETWEEN :start AND :end")
+    BigDecimal averageByUserAndCategoryAndDateRange(@Param("userId") Long userId,
+                                                     @Param("categoryId") Long categoryId,
+                                                     @Param("start") LocalDate start,
+                                                     @Param("end") LocalDate end);
 }
