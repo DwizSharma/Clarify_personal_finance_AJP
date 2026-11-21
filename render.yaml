@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: Clarify
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MYSQLHOST
+        fromDatabase:
+          name: clarify-db
+          property: host
+      - key: MYSQLPORT
+        fromDatabase:
+          name: clarify-db
+          property: port
+      - key: MYSQLDATABASE
+        fromDatabase:
+          name: clarify-db
+          property: database
+      - key: MYSQLUSER
+        fromDatabase:
+          name: clarify-db
+          property: user
+      - key: MYSQLPASSWORD
+        fromDatabase:
+          name: clarify-db
+          property: password
+    healthCheckPath: /login
+
+databases:
+  - name: clarify-db
+    databaseName: finance_manager
+    user: clarify
+    plan: free
