@@ -1,1 +1,109 @@
-<!doctype html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Transactions · Clarity</title><link rel="stylesheet" th:href="@{/css/style.css}"><script th:src="@{/js/theme.js}"></script></head><body><div class="app-shell"><div th:replace="~{fragments/nav :: sidebar(active='transactions')}"></div><main class="main"><header class="page-header"><h1>Transactions</h1><p class="subtitle">Add and review your income and expenses.</p></header><section class="card"><h2>Quick entry</h2><p>Choose an entry type to open the secure transaction form.</p><a class="button" th:href="@{/addExpense}">Add expense</a> <a class="button secondary" th:href="@{/addIncome}">Add income</a></section><section class="card transaction-accounts"><div class="panel-heading"><div><p class="eyebrow">HOUSEHOLD MONEY</p><h2>Accounts</h2></div><a class="button" th:href="@{/profile#tracked-accounts}">Manage accounts ↗</a></div><p th:each="a:${accounts}" class="transaction-account-row"><strong th:text="${a.accountName}">Account</strong><span th:text="${a.institutionName ?: a.accountType}">Bank</span><span th:text="${a.memberName ?: 'Me'}">Member</span><b th:text="${a.currency} + ' ' + ${a.balance}">INR 0.00</b></p><p th:if="${#lists.isEmpty(accounts)}" class="empty-state">No accounts yet. Add one for you or a family member.</p></section><section class="card"><h2>Recent activity</h2><label>Search transactions <input id="transactionSearch" type="search" placeholder="Search merchant or category"></label><div class="table-wrap"><table id="transactionsTable"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead><tbody><tr th:each="e:${expenses}" class="transaction-row"><td th:text="${e.date}"></td><td>Expense</td><td th:text="${e.category.name}"></td><td th:text="${e.description}"></td><td th:text="${e.amount}"></td></tr><tr th:each="i:${incomes}" class="transaction-row"><td th:text="${i.date}"></td><td>Income</td><td th:text="${i.category.name}"></td><td th:text="${i.description}"></td><td th:text="${i.amount}"></td></tr></tbody></table></div></section></main></div><script>document.getElementById('transactionSearch').addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('.transaction-row').forEach(r=>r.hidden=!r.innerText.toLowerCase().includes(q));});</script></body></html>
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Transactions · Clarity</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <script th:src="@{/js/theme.js}"></script>
+</head>
+<body>
+<div class="app-shell">
+  <div th:replace="~{fragments/nav :: sidebar(active='transactions')}"></div>
+  <main class="main">
+    <header class="page-header">
+      <h1>Transactions</h1>
+      <p class="subtitle">Search, filter and review every income and expense.</p>
+    </header>
+
+    <!-- Filter form -->
+    <section class="card" style="margin-bottom:18px">
+      <form method="get" th:action="@{/transactions}" class="transaction-filter-form">
+        <div class="filter-row">
+          <label>Search
+            <input type="search" name="q" placeholder="Description or category" th:value="${filterQ}">
+          </label>
+          <label>Type
+            <select name="type">
+              <option value="" th:selected="${filterType == null}">All</option>
+              <option value="expense" th:selected="${filterType == 'expense'}">Expenses only</option>
+              <option value="income"  th:selected="${filterType == 'income'}">Income only</option>
+            </select>
+          </label>
+          <label>Category
+            <select name="categoryId">
+              <option value="">All categories</option>
+              <option th:each="c:${categories}" th:value="${c.id}" th:text="${c.name}"
+                      th:selected="${filterCategoryId != null and filterCategoryId == c.id}">Category</option>
+            </select>
+          </label>
+          <label>From
+            <input type="date" name="from" th:value="${filterFrom}">
+          </label>
+          <label>To
+            <input type="date" name="to" th:value="${filterTo}">
+          </label>
+          <div class="filter-actions">
+            <button class="button" type="submit">Filter</button>
+            <a class="button secondary" th:href="@{/transactions}">Clear</a>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Accounts summary -->
+    <section class="card transaction-accounts" style="margin-bottom:18px">
+      <div class="panel-heading">
+        <div><p class="eyebrow">YOUR ACCOUNTS</p><h2>Balances</h2></div>
+        <a class="button secondary" th:href="@{/profile#tracked-accounts}">Manage ↗</a>
+      </div>
+      <p th:each="a:${accounts}" class="transaction-account-row">
+        <strong th:text="${a.accountName}">Account</strong>
+        <span th:text="${a.institutionName ?: a.accountType}">Bank</span>
+        <span th:text="${a.memberName ?: 'Me'}">Member</span>
+        <b th:text="${a.currency} + ' ' + ${#numbers.formatDecimal(a.balance,1,'COMMA',2,'POINT')}">INR 0.00</b>
+      </p>
+      <p th:if="${#lists.isEmpty(accounts)}" class="empty-state">No accounts yet. Add one in your profile.</p>
+    </section>
+
+    <!-- Transactions table -->
+    <section class="card">
+      <div class="panel-heading">
+        <div><p class="eyebrow">ACTIVITY</p><h2>Transactions</h2></div>
+        <div style="display:flex;gap:8px">
+          <a class="button secondary" th:href="@{/addExpense}">+ Expense</a>
+          <a class="button" th:href="@{/addIncome}">+ Income</a>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th style="text-align:right">Amount</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="e:${expenses}">
+              <td th:text="${e.date}"></td>
+              <td><span class="activity-type expense-type">Expense</span></td>
+              <td th:text="${e.category.name}"></td>
+              <td th:text="${e.description ?: '—'}"></td>
+              <td style="text-align:right" class="amount-neg" th:text="'− ₹ ' + ${#numbers.formatDecimal(e.amount,1,'COMMA',2,'POINT')}"></td>
+            </tr>
+            <tr th:each="i:${incomes}">
+              <td th:text="${i.date}"></td>
+              <td><span class="activity-type income-type">Income</span></td>
+              <td th:text="${i.category.name}"></td>
+              <td th:text="${i.description ?: '—'}"></td>
+              <td style="text-align:right" class="amount-pos" th:text="'+ ₹ ' + ${#numbers.formatDecimal(i.amount,1,'COMMA',2,'POINT')}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="empty-state" th:if="${#lists.isEmpty(expenses) and #lists.isEmpty(incomes)}">
+        No transactions match your filters.
+      </p>
+    </section>
+
+    <a class="button secondary" style="margin-top:14px;display:inline-block" th:href="@{/reports/download(format='pdf')}">Download monthly report ↓</a>
+  </main>
+</div>
+</body>
+</html>

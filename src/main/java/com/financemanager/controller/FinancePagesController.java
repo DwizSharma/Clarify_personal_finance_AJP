@@ -17,7 +17,34 @@ public class FinancePagesController {
  public FinancePagesController(UserService u,FinanceService f,CategoryRepository c,AccountRepository a,SavingsGoalRepository g,NotificationRepository n,BudgetRepository b,TransactionSplitRepository splits){users=u;finance=f;categories=c;accounts=a;goals=g;notifications=n;budgets=b;this.splits=splits;}
  private User current(UserDetails principal){return users.findByUsername(principal.getUsername());}
  @GetMapping("/") public String home(){return "home";}
- @GetMapping("/transactions") public String transactions(@AuthenticationPrincipal UserDetails p,Model m){User u=current(p);m.addAttribute("user",u);m.addAttribute("categories",categories.findAll());m.addAttribute("accounts",accounts.findByUserId(u.getId()));m.addAttribute("expenses",finance.getExpenseHistory(u.getId()));m.addAttribute("incomes",finance.getIncomeHistory(u.getId()));return "transactions";}
+ @GetMapping("/transactions") public String transactions(@AuthenticationPrincipal UserDetails p, Model m,
+         @RequestParam(required=false) String q,
+         @RequestParam(required=false) String type,
+         @RequestParam(required=false) Long categoryId,
+         @RequestParam(required=false) java.time.LocalDate from,
+         @RequestParam(required=false) java.time.LocalDate to) {
+     User u = current(p);
+     java.util.List<com.financemanager.entity.Expense> expenses = finance.getExpenseHistory(u.getId());
+     java.util.List<com.financemanager.entity.Income> incomes = finance.getIncomeHistory(u.getId());
+     // Apply filters
+     if (from != null) { expenses = expenses.stream().filter(e -> !e.getDate().isBefore(from)).toList(); incomes = incomes.stream().filter(i -> !i.getDate().isBefore(from)).toList(); }
+     if (to != null)   { expenses = expenses.stream().filter(e -> !e.getDate().isAfter(to)).toList();   incomes = incomes.stream().filter(i -> !i.getDate().isAfter(to)).toList(); }
+     if (categoryId != null) { expenses = expenses.stream().filter(e -> e.getCategory().getId().equals(categoryId)).toList(); incomes = incomes.stream().filter(i -> i.getCategory().getId().equals(categoryId)).toList(); }
+     if (q != null && !q.isBlank()) { String lq = q.toLowerCase(java.util.Locale.ROOT); expenses = expenses.stream().filter(e -> (e.getDescription()!=null&&e.getDescription().toLowerCase(java.util.Locale.ROOT).contains(lq))||e.getCategory().getName().toLowerCase(java.util.Locale.ROOT).contains(lq)).toList(); incomes = incomes.stream().filter(i -> (i.getDescription()!=null&&i.getDescription().toLowerCase(java.util.Locale.ROOT).contains(lq))||i.getCategory().getName().toLowerCase(java.util.Locale.ROOT).contains(lq)).toList(); }
+     if ("expense".equalsIgnoreCase(type)) incomes = java.util.List.of();
+     if ("income".equalsIgnoreCase(type))  expenses = java.util.List.of();
+     m.addAttribute("user", u);
+     m.addAttribute("categories", categories.findAll());
+     m.addAttribute("accounts", accounts.findByUserId(u.getId()));
+     m.addAttribute("expenses", expenses);
+     m.addAttribute("incomes", incomes);
+     m.addAttribute("filterQ", q);
+     m.addAttribute("filterType", type);
+     m.addAttribute("filterCategoryId", categoryId);
+     m.addAttribute("filterFrom", from);
+     m.addAttribute("filterTo", to);
+     return "transactions";
+ }
  @GetMapping("/budgets") public String budgetPage(@AuthenticationPrincipal UserDetails p,Model m){User u=current(p);var rows=finance.getBudgets(u.getId());YearMonth period=YearMonth.now();var stats=rows.stream().map(b->{var spent=splits.sumByUserAndCategoryAndDateRange(u.getId(),b.getCategory().getId(),period.atDay(1),period.atEndOfMonth());int pct=b.getMonthlyLimit().signum()==0?0:spent.multiply(BigDecimal.valueOf(100)).divide(b.getMonthlyLimit(),0,java.math.RoundingMode.HALF_UP).intValue();return java.util.Map.of("name",b.getCategory().getName(),"limit",b.getMonthlyLimit(),"spent",spent,"percent",Math.max(0,pct),"tone",pct>=100?"danger":pct>=75?"warning":"success");}).toList();m.addAttribute("user",u);m.addAttribute("budgetStats",stats);m.addAttribute("budgets",rows);m.addAttribute("categories",categories.findByType(Category.Type.EXPENSE));m.addAttribute("alerts",notifications.findByUserIdOrderByCreatedAtDesc(u.getId()));return "budgets";}
  @PostMapping("/budgets") public String saveBudget(@AuthenticationPrincipal UserDetails p,@RequestParam Long categoryId,@RequestParam BigDecimal monthlyLimit){User u=current(p);Category c=categories.findById(categoryId).orElseThrow();Budget b=budgets.findByUserIdAndCategoryId(u.getId(),categoryId).orElseGet(Budget::new);b.setUser(u);b.setCategory(c);b.setMonthlyLimit(monthlyLimit);b.setMonth(YearMonth.now().getMonthValue());b.setYear(YearMonth.now().getYear());budgets.save(b);return "redirect:/budgets";}
  @GetMapping("/settings/theme") public String theme(){return "theme-settings";}
