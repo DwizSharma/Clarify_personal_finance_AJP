@@ -546,61 +546,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 .sidebar-theme-toggle[aria-pressed="true"] .theme-toggle-track i { transform:translateX(14px); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
 
-/* Luca palette: warm limestone, amber, deep teal, eucalyptus and mint */
-:root {
-    --accent: #5A8F76;
-    --color-bg: #f5f2dc;
-    --color-surface: #fffdf3;
-    --color-border: #e3dfbd;
-    --color-text: #081B1B;
-    --color-text-muted: #60756e;
-    --color-primary: #203B37;
-    --color-primary-dark: #081B1B;
-    --color-primary-soft: #e4eee7;
-    --color-success: #5A8F76;
-    --color-success-soft: #e5f2eb;
-    --color-danger: #a95040;
-}
-body, .landing-page { background:var(--color-bg); color:var(--color-text); }
-.button, .btn, .landing-cta, .quick-add-fab { background:#081B1B; }
-.button:hover, .btn:hover, .landing-cta:hover { background:#203B37; }
-.brand-mark, .landing-brand .brand-mark, .auth-brand .brand-mark { background:#96CDB0; color:#081B1B; }
-.brand-period, .eyebrow-dot, .live-pill i { color:#5A8F76; background-color:#5A8F76; }
-.hero-copy h1 em, .section-intro h2 em, .wide-banner em, .audience-section h2 em, .closing-cta h2 em { color:#5A8F76; }
-.preview-change span:first-child, .panel-link, .text-link span, .audience-grid a { color:#5A8F76; }
-.landing-nav, .audience-grid article { border-color:#ded9b7; }
-.preview-card, .card, .stat-card, .auth-card { background:#fffdf3; border-color:#e3dfbd; }
-.art-orbit { border-color:#96CDB0; opacity:.55; }
-.hero-finance-illustration { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:.62; pointer-events:none; }
-.balance-preview, .spend-preview, .goal-preview { background:rgba(255,253,243,.96); border-color:#e3dfbd; }
-.mint, .account-type-mark, .bill-calendar { background:#e4eee7; color:#203B37; }
-.spend-meter i, .goal-ticket-bar i { background:#5A8F76; }
-.goal-ring { color:#203B37; }
-.feature-slide.slide-lime { background:#96CDB0; color:#081B1B; }
-.feature-slide.slide-purple { background:#203B37; color:#fffdf3; }
-.feature-slide.slide-blue { background:#EEE8B2; color:#081B1B; }
-.feature-slide.slide-purple h3, .feature-slide.slide-purple p, .feature-slide.slide-purple a { color:#fffdf3; }
-.feature-slide.slide-purple .goal-ticket { color:#081B1B; }
-.feature-slide.slide-purple .goal-ticket-bar i { background:#C18D52; }
-.feature-slide.slide-purple .tiny-star { color:#96CDB0; }
-.wide-banner { background:#081B1B; }
-.wide-banner em, .banner-top span:last-child, .wide-banner a, .banner-stamp span { color:#96CDB0; }
-.closing-cta { background:#e8e3bd; }
-.closing-decoration { color:#C18D52; }
-.gallery-dot.active { background:#5A8F76; }
-.gallery-arrows button:hover { background:#203B37; }
-.dashboard-stats .income .value, .amount-pos { color:#5A8F76; }
-.budget-meter-track i, .needs-bar, .flow-income-bar, .legend-income, .legend-current { background:#5A8F76!important; }
-.wants-bar, .flow-expense-bar, .legend-expense { background:#C18D52!important; }
-.savings-bar { background:#96CDB0!important; }
-.health-card { background:#e4eee7; }
-:root[data-theme="dark"] { --color-bg:#081B1B; --color-surface:#102724; --color-border:#29433e; --color-text:#f5f2dc; --color-text-muted:#b2c7bc; --color-primary-soft:#203B37; }
-:root[data-theme="dark"] .preview-card, :root[data-theme="dark"] .card, :root[data-theme="dark"] .stat-card, :root[data-theme="dark"] .auth-card { background:#102724; border-color:#29433e; color:#f5f2dc; }
-:root[data-theme="dark"] .sidebar { background:#0b211f; border-color:#29433e; }
-:root[data-theme="dark"] .landing-page { background:#081B1B; color:#f5f2dc; }
-:root[data-theme="dark"] .landing-nav { border-color:#29433e; }
-:root[data-theme="dark"] .landing-nav nav a, :root[data-theme="dark"] .landing-login { color:#d1ddd4; }
-:root[data-theme="dark"] .closing-cta { background:#203B37; }
 @media (max-width:700px) { .hero-finance-illustration { opacity:.28; } }
 .sankey-card { grid-column:1/-1; }
 .sankey-source-data { display:none; }
