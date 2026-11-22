@@ -1,158 +1,154 @@
-# Personal Finance Manager
+# Clarity · Personal Finance Manager
 
-A Spring Boot web app for tracking personal income, expenses, and category budgets in real time,
-matching the architecture described in the accompanying project presentation.
+![Java](https://img.shields.io/badge/Java-17+-orange?style=flat-square&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen?style=flat-square&logo=springboot)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+![CI](https://github.com/DwizSharma/Clarify_personal_finance_AJP/actions/workflows/ci.yml/badge.svg)
 
-## Tech Stack
-- Java 17, Spring Boot 3.2.5
-- Spring Data JPA / Hibernate
-- MySQL
-- Spring MVC + Thymeleaf
-- Spring Security (BCrypt password hashing, session-based login)
-- Maven, embedded Tomcat
+A full-stack personal finance web app built with Spring Boot and Thymeleaf. Track income, expenses, budgets, savings goals, and upcoming bills — all from a clean dashboard.
 
-## Split transactions
-On the Add Expense form, check "Split this expense across more than one category"
-to divide one expense's total across several categories (e.g. a $120 supermarket
-receipt as $100 Groceries + $20 Household Supplies), each with its own optional
-note. Split amounts must add up to the expense total. The real-time budget check
-and the Recent Expenses list both read from these per-category splits, so a
-divided expense is attributed to each of its categories correctly rather than
-counted entirely under its top-level category. Expenses you don't explicitly
-split still get one split behind the scenes that mirrors their own
-category/amount, so this never requires a separate code path. Any expenses
-already in the database from before this feature existed are backfilled with a
-default split automatically the next time the app starts (`SplitBackfillRunner`).
+---
 
-## Prerequisites
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 📊 **Dashboard** | Net worth, monthly income/expense, savings rate, daily safe-to-spend |
+| 🔥 **Spending heatmap** | 26-week GitHub-style heatmap of daily outflows |
+| 📈 **Cash flow chart** | 14-day income vs expense bar chart |
+| 🎯 **Budget tracking** | Per-category monthly limits with real-time progress bars and alerts |
+| 💰 **Savings goals** | Named goals with progress tracking and 72-hour wish vault |
+| 🧾 **Split transactions** | Divide one receipt across multiple categories |
+| 📂 **CSV import** | Bulk-import bank statements via CSV upload |
+| 📤 **CSV export** | Export all transactions to CSV with date/type filters |
+| 🔁 **Recurring bills** | Track upcoming rent, EMIs, subscriptions |
+| 🏦 **Multi-account** | Track savings, checking, wallets, and credit cards per household member |
+| 🔒 **Secure auth** | BCrypt password hashing, Spring Security session login, password change |
+| 🌙 **Dark mode** | Toggle-able dark/light theme saved in localStorage |
+| 📄 **PDF reports** | Download monthly PDF report |
+| 🔍 **Transaction search** | Filter by keyword, type, category, and date range |
+
+---
+
+## 🛠 Tech Stack
+
+- **Backend:** Java 17, Spring Boot 3.2.5, Spring MVC, Spring Security, Spring Data JPA / Hibernate
+- **Frontend:** Thymeleaf, vanilla CSS, vanilla JavaScript
+- **Database:** MySQL 8
+- **Build:** Maven, embedded Tomcat
+- **CI:** GitHub Actions
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
 - JDK 17+
 - Maven 3.8+
-- MySQL Server running locally
+- MySQL 8
 
-## Setup (database)
-
-Run the scripts in `database/` in this order (MySQL Workbench or `mysql -u root -p < file.sql`):
-
-| Order | File | When |
-|-------|------|------|
-| 1 | `01_create_database.sql` | always |
-| 2 | `02_repair_existing_users_table.sql` | **only** if the `finance_manager` DB already existed from an older version (fixes `Field 'budget_alert_threshold' doesn't have a default value`) |
-| 3 | `03_create_tables.sql` | always (safe to re-run) |
-| 4 | `04_seed_categories.sql` | optional - the app also seeds categories on startup |
-| 5 | `05_verify.sql` | optional checks |
-
-`00_reset_database_OPTIONAL.sql` drops the whole DB for a clean start (then run 1, 3, 4).
-
-Then set `DB_USERNAME` / `DB_PASSWORD` in your environment (or IntelliJ run configuration);
-the datasource defaults to `root` with an empty password.
-
-## Run
-
-Start MySQL 8 and create the database (`CREATE DATABASE finance_manager;`). Configure
-`DB_USERNAME` and `DB_PASSWORD` as environment variables in IntelliJ's Run Configuration
-or in your shell. From the project root, run:
+### Setup
 
 ```bash
-mvn spring-boot:run
-```
-
-In IntelliJ, open this directory as a Maven project, wait for dependency import, then
-run `FinanceManagerApplication`. Open **http://localhost:8082/register** to create an
-account, then log in at **http://localhost:8082/login**. The port is set in
-`application.properties`.
-
-## Dashboard insights and statement tools
-
-The dashboard summarizes tracked balances, current-month income and expenses, savings rate, and a per-day spend guide. It also shows a cash-flow Sankey, a 26-week spending heatmap, a 14-day cash-flow chart, prior-month category comparisons, budget progress and threshold alerts, estimated 50/30/20 category allocation, savings goals, and upcoming bills. Category groupings are estimates based on category names.
-
-Add bank, wallet, savings, checking, and credit-card accounts under **Profile → Bank & money accounts**. Give each account a household member label to keep family finances organized under one login. Enter credit-card amounts owed as positive amounts; Clarity stores them as liabilities in the overview. These are manually tracked accounts and do not connect to or move money at a bank.
-
-Use **Transfer between accounts** to move a positive amount between accounts in the same currency. Use **Upload CSV** to import up to 1,000 rows (2 MB maximum). CSV columns are `date,type,amount,category,description`; `account` is optional. Dates must use `YYYY-MM-DD`, type must be `income` or `expense`, and category/account names must match entries already in the app. An example is available at `/example-statement.csv`.
-
-Add a reminder under **Upcoming bills & renewals** for scheduled rent, subscriptions, EMIs, or other payments. Reminders are user-entered and appear in the next-14-days window.
-
-## Project Structure
-
-```
-src/main/java/com/financemanager/
-  FinanceManagerApplication.java   # main class
-  config/
-    SecurityConfig.java            # Spring Security setup
-    SplitBackfillRunner.java       # gives pre-existing expenses a default split on startup
-  entity/                          # User, Category, Income, Expense, Budget, TransactionSplit
-  repository/                      # Spring Data JPA repositories
-  service/                         # UserService, FinanceService, CustomUserDetailsService
-  controller/                      # AuthController, DashboardController,
-                                    # ExpenseController, IncomeController
-src/main/resources/
-  application.properties
-  templates/                       # Thymeleaf views + fragments/nav.html (shared sidebar)
-  static/css/style.css
-```
-
-## Key Endpoints
-| Method | Path         | Description                    |
-|--------|--------------|---------------------------------|
-| GET    | /register    | Registration form               |
-| POST   | /register    | Create a new user                |
-| GET    | /login       | Login form                       |
-| GET    | /dashboard   | Net balance, budgets, history    |
-| GET/POST | /addIncome | Log a new income entry          |
-| GET/POST | /addExpense| Log a new expense (checks budget cap) |
-| GET | /transactions | Search recent income and expense activity |
-| POST | /transfers | Move funds between your accounts |
-| GET/POST | /statements/import | Import a CSV statement |
-| POST | /bills | Add an upcoming bill reminder |
-| GET/POST | /budgets | View spending progress and save monthly category limits |
-| POST | /api/v1/upi/webhook | Parse and record an authenticated UPI payment notification |
-| GET | /settings/theme | Save display preferences in browser local storage |
-| GET | /reports/download?format=pdf | Download the current month's PDF report (CSV also supported) |
-
-The app now includes account, savings goal, notification and UPI sync log mappings,
-bank SMS parsing, a financial health score, theme preferences and the UPI simulator.
-Use `database/03_create_tables.sql` for the relational schema reference; Hibernate
-continues to update existing installations through `ddl-auto=update`.
-
-## Notes
-- Passwords are hashed with BCrypt before storage — never stored in plain text.
-- `spring.jpa.hibernate.ddl-auto=update` auto-creates/updates tables on startup;
-  switch to a migration tool (Flyway/Liquibase) for production use.
-- Budget-cap checking runs in `FinanceService.checkBudgetStatus()` and compares
-  monthly spend per category — read from `TransactionSplitRepository`, so split
-  expenses are counted correctly — against the `Budget` entity's `monthlyLimit`.
-
-## Run from IntelliJ IDEA
-
-1. Install JDK 17 or newer and MySQL 8. In MySQL, create the local database with `CREATE DATABASE finance_manager;` (or run `database/01_create_database.sql`).
-2. Open IntelliJ IDEA and choose **File → Open**, then select `Desktop/AJP_Project/project` (the directory containing `pom.xml`). Choose **Open as Project** and trust the project when prompted.
-3. In **File → Project Structure → Project**, set the Project SDK to JDK 17 or newer. Let IntelliJ import the Maven dependencies from `pom.xml` and finish indexing.
-4. Open **Run → Edit Configurations… → + → Spring Boot**. Set the main class to `com.financemanager.FinanceManagerApplication` and set the working directory to this project directory. Add environment variables `DB_USERNAME=root` and `DB_PASSWORD=` (set your local MySQL password after the equals sign; leave it empty if root has no password).
-5. Click **Apply**, **OK**, then the green **Run** button. Wait for the Spring Boot started message in the Run window.
-6. Visit `http://localhost:8082/` for the landing page. Create an account, then log in. The application dashboard is at `http://localhost:8082/dashboard`.
-
-The app uses the local MySQL database `finance_manager`; it does not use an embedded database. The default MySQL username is `root`, and the password is read from the IntelliJ `DB_PASSWORD` environment variable. You can also launch it from IntelliJ's Maven tool window with `spring-boot:run` after setting the same environment variables in the Maven run configuration.
-
-## 📸 Screenshots
-
-| Dashboard | Transactions | Budget |
-|---|---|---|
-| *Coming soon* | *Coming soon* | *Coming soon* |
-
-## 🧰 Setup & Run Locally
-
-```bash
-# 1. Clone the repo
+# 1. Clone
 git clone https://github.com/DwizSharma/Clarify_personal_finance_AJP.git
 cd Clarify_personal_finance_AJP
 
-# 2. Set up MySQL
+# 2. Create database
 mysql -u root -p < database/01_create_database.sql
 mysql -u root -p < database/03_create_tables.sql
 
-# 3. Run the app
+# 3. Set environment variables
 export DB_USERNAME=root
 export DB_PASSWORD=your_password
-./start-clarify.sh
+
+# 4. Run
+mvn spring-boot:run
 ```
 
-## ⭐ Star this repo if you found it useful!
+Then open **http://localhost:8082/register** to create an account.
+
+### IntelliJ IDEA
+
+1. **File → Open** the `project/` folder (the one containing `pom.xml`)
+2. **File → Project Structure → Project SDK** → set to JDK 17+
+3. **Run → Edit Configurations → + → Spring Boot**, main class: `com.financemanager.FinanceManagerApplication`
+4. Add env vars: `DB_USERNAME=root`, `DB_PASSWORD=your_password`
+5. Click **Run** → visit **http://localhost:8082**
+
+---
+
+## 🗄 Database Scripts
+
+Run scripts from `database/` in this order:
+
+| # | File | Purpose |
+|---|---|---|
+| 1 | `01_create_database.sql` | Create the schema |
+| 2 | `02_repair_existing_users_table.sql` | Only if upgrading from an older version |
+| 3 | `03_create_tables.sql` | Create all tables (safe to re-run) |
+| 4 | `04_seed_categories.sql` | Seed default categories (app also does this on startup) |
+| 5 | `05_verify.sql` | Optional sanity checks |
+
+> `00_reset_database_OPTIONAL.sql` drops everything for a clean start.
+
+---
+
+## 📁 Project Structure
+
+```
+src/main/java/com/financemanager/
+├── config/          # SecurityConfig, CategorySeeder, SplitBackfillRunner
+├── controller/      # Dashboard, Expense, Income, Budget, Profile, CSV export...
+├── entity/          # User, Expense, Income, Budget, Account, SavingsGoal...
+├── repository/      # Spring Data JPA repositories
+└── service/         # FinanceService, UserService, FinancialHealthService...
+
+src/main/resources/
+├── templates/       # Thymeleaf HTML templates + fragments/nav.html
+└── static/css/      # style.css (design system)
+```
+
+---
+
+## 🔑 Key Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/` | Landing page |
+| GET/POST | `/register` | Create account |
+| GET/POST | `/login` | Login |
+| GET | `/dashboard` | Main dashboard |
+| GET/POST | `/addExpense` | Log expense |
+| GET/POST | `/addIncome` | Log income |
+| GET | `/transactions` | Search & filter transactions |
+| GET | `/transactions/export` | Export transactions as CSV |
+| GET/POST | `/budgets` | Budget management |
+| GET | `/profile` | Profile, accounts, password change |
+| POST | `/transfers` | Transfer between accounts |
+| GET | `/statements/import` | Import CSV statement |
+| GET | `/reports/download?format=pdf` | Download monthly PDF |
+
+---
+
+## 📸 Screenshots
+
+| Dashboard | Transactions | Budgets |
+|---|---|---|
+| *Coming soon* | *Coming soon* | *Coming soon* |
+
+---
+
+## 📝 Notes
+
+- Passwords are hashed with BCrypt — never stored in plain text
+- `ddl-auto=update` handles schema migrations in development; use Flyway/Liquibase for production
+- Split transactions ensure correct per-category budget attribution
+- All account balances are manually tracked — no live bank connections
+
+---
+
+## 📄 License
+
+MIT © [DwizSharma](https://github.com/DwizSharma)
