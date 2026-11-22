@@ -30,4 +30,13 @@ public class UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
     }
+
+    public boolean checkPassword(User user, String rawPassword) {
+        return passwordEncoder.matches(rawPassword, user.getPasswordHash());
+    }
+
+    public void changePassword(User user, String rawPassword) {
+        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
+    }
 }

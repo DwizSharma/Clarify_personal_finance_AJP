@@ -135,4 +135,28 @@ public class ProfileController {
         if (value == null || value.isBlank()) return null;
         return limit(value.trim(), max);
     }
+
+    @PostMapping("/profile/password")
+    public String changePassword(@AuthenticationPrincipal UserDetails principal,
+                                 @RequestParam String currentPassword,
+                                 @RequestParam String newPassword,
+                                 @RequestParam String confirmPassword,
+                                 RedirectAttributes redirect) {
+        User user = users.findByUsername(principal.getUsername());
+        if (!users.checkPassword(user, currentPassword)) {
+            redirect.addFlashAttribute("profileError", "Current password is incorrect.");
+            return "redirect:/profile";
+        }
+        if (newPassword.length() < 8) {
+            redirect.addFlashAttribute("profileError", "New password must be at least 8 characters.");
+            return "redirect:/profile";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            redirect.addFlashAttribute("profileError", "New passwords do not match.");
+            return "redirect:/profile";
+        }
+        users.changePassword(user, newPassword);
+        redirect.addFlashAttribute("profileMessage", "Password updated successfully.");
+        return "redirect:/profile";
+    }
 }
