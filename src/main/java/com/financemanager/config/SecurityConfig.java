@@ -34,6 +34,10 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
+            )
+            // Redirect 403 Forbidden to the login page with a clear message
+            .exceptionHandling(ex -> ex
+                .accessDeniedPage("/403")
             );
 
         return http.build();

@@ -29,6 +29,11 @@ public class    AuthController {
         return "register"; // templates/register.html
     }
 
+    @GetMapping("/403")
+    public String accessDenied() {
+        return "error/403";
+    }
+
     @PostMapping("/register")
     public String register(@RequestParam String username,
                             @RequestParam String email,
