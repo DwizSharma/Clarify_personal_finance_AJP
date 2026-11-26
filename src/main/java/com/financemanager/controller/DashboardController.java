@@ -68,6 +68,7 @@ public class DashboardController {
         model.addAttribute("dailySafeSpend", spendable.divide(BigDecimal.valueOf(daysLeft), 2, RoundingMode.HALF_UP));
         model.addAttribute("daysLeftInMonth", month.lengthOfMonth() - today.getDayOfMonth());
         model.addAttribute("currentMonthLabel", month.getMonth().getDisplayName(java.time.format.TextStyle.FULL, Locale.ENGLISH));
+        model.addAttribute("monthProgressPercent", today.getDayOfMonth() * 100 / month.lengthOfMonth());
         model.addAttribute("incomeHistory", finance.getIncomeHistory(user.getId()));
         model.addAttribute("expenseHistory", finance.getExpenseHistory(user.getId()));
         model.addAttribute("accounts", accountRows);
@@ -127,7 +128,10 @@ public class DashboardController {
             LocalDate date = today.minusDays(offset);
             BigDecimal in = finance.getIncomeForDay(user.getId(), date);
             BigDecimal out = finance.getExpenseForDay(user.getId(), date);
-            daily.add(Map.of("label", String.valueOf(date.getDayOfMonth()), "income", in, "expense", out, "max", in.max(out)));
+            BigDecimal max = in.max(out);
+            int incomeH = max.signum() == 0 ? 2 : Math.max(3, in.multiply(BigDecimal.valueOf(100)).divide(max, 0, RoundingMode.DOWN).intValue());
+            int expenseH = max.signum() == 0 ? 2 : Math.max(3, out.multiply(BigDecimal.valueOf(100)).divide(max, 0, RoundingMode.DOWN).intValue());
+            daily.add(Map.of("label", String.valueOf(date.getDayOfMonth()), "income", in, "expense", out, "max", max, "incomeH", incomeH, "expenseH", expenseH));
         }
         model.addAttribute("dailyFlow", daily);
 
@@ -136,7 +140,12 @@ public class DashboardController {
         for (Category c : userExpenseCategories(user.getId())) {
             BigDecimal now = splits.sumByUserAndCategoryAndDateRange(user.getId(), c.getId(), month.atDay(1), month.atEndOfMonth());
             BigDecimal before = splits.sumByUserAndCategoryAndDateRange(user.getId(), c.getId(), previous.atDay(1), previous.atEndOfMonth());
-            if (now.signum()>0 || before.signum()>0) comparisons.add(Map.of("name",c.getName(),"current",now,"previous",before,"scale",now.max(before)));
+            if (now.signum()>0 || before.signum()>0) {
+                BigDecimal scale = now.max(before);
+                int prevW = scale.signum() == 0 ? 0 : before.multiply(BigDecimal.valueOf(100)).divide(scale, 0, RoundingMode.DOWN).intValue();
+                int currW = scale.signum() == 0 ? 0 : now.multiply(BigDecimal.valueOf(100)).divide(scale, 0, RoundingMode.DOWN).intValue();
+                comparisons.add(Map.of("name", c.getName(), "current", now, "previous", before, "scale", scale, "prevW", prevW, "currW", currW));
+            }
         }
         comparisons.sort((a,b)->((BigDecimal)b.get("current")).compareTo((BigDecimal)a.get("current")));
         model.addAttribute("comparisons", comparisons.stream().limit(5).toList());
@@ -162,6 +171,12 @@ public class DashboardController {
         model.addAttribute("needsPercent", income.signum()==0?0:needs.multiply(BigDecimal.valueOf(100)).divide(income,0,RoundingMode.HALF_UP).intValue());
         model.addAttribute("wantsPercent", income.signum()==0?0:wants.multiply(BigDecimal.valueOf(100)).divide(income,0,RoundingMode.HALF_UP).intValue());
         model.addAttribute("savingsBenchmark", income.signum()==0?0:savings.max(BigDecimal.ZERO).multiply(BigDecimal.valueOf(100)).divide(income,0,RoundingMode.HALF_UP).intValue());
+        int needsPct  = income.signum()==0?0:needs.multiply(BigDecimal.valueOf(100)).divide(income,0,RoundingMode.HALF_UP).intValue();
+        int wantsPct  = income.signum()==0?0:wants.multiply(BigDecimal.valueOf(100)).divide(income,0,RoundingMode.HALF_UP).intValue();
+        int savingsPct= income.signum()==0?0:savings.max(BigDecimal.ZERO).multiply(BigDecimal.valueOf(100)).divide(income,0,RoundingMode.HALF_UP).intValue();
+        model.addAttribute("needsBarW",   Math.min(100, needsPct  * 2));
+        model.addAttribute("wantsBarW",   Math.min(100, wantsPct  * 3));
+        model.addAttribute("savingsBarW", Math.min(100, savingsPct * 5));
 
         model.addAttribute("moneyMoments", List.of(
                 Map.of("tag", "YOUR MONTH, SO FAR", "title", savings.signum()>0?"You’ve got some breathing room.":"Take a fresh look at this month.", "copy", savings.signum()>0?"Your recorded income is ahead of expenses. Consider putting a little toward one of your goals.":"Review your spending and budget to decide what comes next.", "url", savings.signum()<0?"/budgets":"/dashboard#goal-form", "action", savings.signum()<0?"Review your budgets":"Visit a savings goal", "symbol", "✳"),
