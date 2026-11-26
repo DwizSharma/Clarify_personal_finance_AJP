@@ -18,6 +18,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     // at the object level for fetch-joined root entities.
     @Query("SELECT DISTINCT e FROM Expense e " +
            "LEFT JOIN FETCH e.category " +
+           "LEFT JOIN FETCH e.account " +
            "LEFT JOIN FETCH e.splits s " +
            "LEFT JOIN FETCH s.category " +
            "WHERE e.user.id = :userId ORDER BY e.date DESC")
